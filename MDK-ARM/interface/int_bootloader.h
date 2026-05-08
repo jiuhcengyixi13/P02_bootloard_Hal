@@ -13,5 +13,6 @@
 #define APP_START_ADDRESS 0x08004000
 
 void Int_bootloader_init(void);
-
+void Int_flash_erase(void);
+void Int_flash_write_halfword(void);
 #endif

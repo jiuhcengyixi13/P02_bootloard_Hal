@@ -21,6 +21,7 @@
 #include "usart.h"
 #include "gpio.h"
 #include "int_bootloader.h"
+#include "string.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -44,7 +45,14 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+
+extern uint8_t g_uart_rec_buff[];
+extern uint16_t g_uart_rec_len;
 extern uint16_t g_uart_rec_full_len;
+extern uint32_t g_uart_rec_offset;
+extern uint8_t g_last_byte_flag;
+extern uint8_t g_last_byte;
+extern uint8_t uart_rx_finish;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -102,9 +110,27 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    printf("g_uart_rec_full_len:%d\n", g_uart_rec_full_len); 
-    HAL_Delay(5000);                                         // 延迟5s
+    if (uart_rx_finish == 1)
+    {
+      // Flash 操作
+      HAL_FLASH_Unlock();
+      Int_flash_erase();
+      Int_flash_write_halfword();
+      HAL_FLASH_Lock();
+
+      
+      // 清除标志
+      uart_rx_finish = 0;
+    }
+
+    // 打印接收长度
+    printf("g_uart_rec_full_len:%d\n", g_uart_rec_full_len);
+    HAL_Delay(5000);
   }
+
+  // printf("g_uart_rec_full_len:%d\n", g_uart_rec_full_len);
+  // HAL_Delay(5000);                                         // 延迟5s
+
   /* USER CODE END 3 */
 }
 

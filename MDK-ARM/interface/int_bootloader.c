@@ -14,8 +14,9 @@ uint16_t g_uart_rec_full_len = 0;                            // 累计接收数�
 uint32_t g_uart_rec_offset = 0;                              // Flash写入偏移量
 uint8_t g_last_byte_flag = 0;                                // 是否有遗留单字节标记
 uint8_t g_last_byte = 0;                                     // 保存遗留的单字节
+uint8_t uart_rx_finish = 0;                                  // 接收完成标志位
 
-static void Int_flash_erase(void)
+ void Int_flash_erase(void)
 {
     // 判断是否需要擦除Flash页（检测目标地址是否全为0xff）
     uint8_t is_erase = 0;
@@ -25,7 +26,7 @@ static void Int_flash_erase(void)
         volatile uint8_t *data = (volatile uint8_t *)(APP_START_ADDRESS + i + g_uart_rec_offset);
         if (*data != 0xff)
         {
-         
+
             is_erase = 1;
             // 计算页起始地址（页对齐）
             page_addr = (APP_START_ADDRESS + i + g_uart_rec_offset) -
@@ -50,7 +51,7 @@ static void Int_flash_erase(void)
  * @brief 带遗留字节的Flash写入函数
  * @details 将上次遗留的单字节与本次数据拼接后写入Flash
  */
-static void Int_flash_write_with_last(void)
+ void Int_flash_write_with_last(void)
 {
     for (uint16_t i = 0; i < g_uart_rec_len; i += 2)
     {
@@ -75,7 +76,7 @@ static void Int_flash_write_with_last(void)
  * @brief 无遗留字节的Flash写入函数
  * @details 直接将数据以半字为单位写入Flash
  */
-static void Int_flash_write_no_last(void)
+ void Int_flash_write_no_last(void)
 {
     for (uint16_t i = 0; i < g_uart_rec_len; i += 2)
     {
@@ -90,7 +91,7 @@ static void Int_flash_write_no_last(void)
     }
 }
 
-static void Int_flash_write_halfword(void)
+ void Int_flash_write_halfword(void)
 {
     // 根据数据长度奇偶性选择写入方式
     if ((g_uart_rec_len + g_last_byte_flag) % 2 == 0)
@@ -156,26 +157,33 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
         g_uart_rec_len = Size;
         g_uart_rec_full_len += g_uart_rec_len;
 
-        // 解锁Flash以便写入
-        HAL_FLASH_Unlock();
+        uart_rx_finish = 1; // 只打标志！
 
-        // 擦除Flash页
-        Int_flash_erase();
+        // // 解锁Flash以便写入
+        // HAL_FLASH_Unlock();
 
-        // 根据数据长度奇偶性选择写入16字节方式
-        Int_flash_write_halfword();
+        // // 擦除Flash页
+        // Int_flash_erase();
 
-        // 上锁Flash
-        HAL_FLASH_Lock();
+        // // 根据数据长度奇偶性选择写入16字节方式
+        // Int_flash_write_halfword();
+
+        // // 上锁Flash
+        // HAL_FLASH_Lock();
+        memset(g_uart_rec_buff, 0, BOOTLOADER_UART_REC_BUFF_LEN);
+      __HAL_UART_CLEAR_OREFLAG(&huart1);
+      __HAL_UART_CLEAR_IDLEFLAG(&huart1);
+      HAL_UARTEx_ReceiveToIdle_IT(&huart1, g_uart_rec_buff, BOOTLOADER_UART_REC_BUFF_LEN);
+
     }
-
-    // 清空缓冲区，准备下次接收
-    memset(g_uart_rec_buff, 0, BOOTLOADER_UART_REC_BUFF_LEN);
-    __HAL_UART_CLEAR_OREFLAG(&huart1);
-    __HAL_UART_CLEAR_IDLEFLAG(&huart1);
-    HAL_UARTEx_ReceiveToIdle_IT(&huart1, g_uart_rec_buff, BOOTLOADER_UART_REC_BUFF_LEN);
 }
-//daisudiausiduyasiduyaiusd
+    // 清空缓冲区，准备下次接收
+//     memset(g_uart_rec_buff, 0, BOOTLOADER_UART_REC_BUFF_LEN);
+//     __HAL_UART_CLEAR_OREFLAG(&huart1);
+//     __HAL_UART_CLEAR_IDLEFLAG(&huart1);
+//     HAL_UARTEx_ReceiveToIdle_IT(&huart1, g_uart_rec_buff, BOOTLOADER_UART_REC_BUFF_LEN);
+// }
+// daisudiausiduyasiduyaiusd
 
 // #include "Int_bootloader.h"
 
