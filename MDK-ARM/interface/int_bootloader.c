@@ -16,7 +16,7 @@ uint8_t g_last_byte_flag = 0;                                // 是否有遗留�
 uint8_t g_last_byte = 0;                                     // 保存遗留的单字节
 uint8_t uart_rx_finish = 0;                                  // 接收完成标志位
 
- void Int_flash_erase(void)
+void Int_flash_erase(void)
 {
     // 判断是否需要擦除Flash页（检测目标地址是否全为0xff）
     uint8_t is_erase = 0;
@@ -51,7 +51,7 @@ uint8_t uart_rx_finish = 0;                                  // 接收完成标�
  * @brief 带遗留字节的Flash写入函数
  * @details 将上次遗留的单字节与本次数据拼接后写入Flash
  */
- void Int_flash_write_with_last(void)
+void Int_flash_write_with_last(void)
 {
     for (uint16_t i = 0; i < g_uart_rec_len; i += 2)
     {
@@ -76,7 +76,7 @@ uint8_t uart_rx_finish = 0;                                  // 接收完成标�
  * @brief 无遗留字节的Flash写入函数
  * @details 直接将数据以半字为单位写入Flash
  */
- void Int_flash_write_no_last(void)
+void Int_flash_write_no_last(void)
 {
     for (uint16_t i = 0; i < g_uart_rec_len; i += 2)
     {
@@ -91,7 +91,7 @@ uint8_t uart_rx_finish = 0;                                  // 接收完成标�
     }
 }
 
- void Int_flash_write_halfword(void)
+void Int_flash_write_halfword(void)
 {
     // 根据数据长度奇偶性选择写入方式
     if ((g_uart_rec_len + g_last_byte_flag) % 2 == 0)
@@ -170,14 +170,13 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 
         // // 上锁Flash
         // HAL_FLASH_Lock();
-        memset(g_uart_rec_buff, 0, BOOTLOADER_UART_REC_BUFF_LEN);
-      __HAL_UART_CLEAR_OREFLAG(&huart1);
-      __HAL_UART_CLEAR_IDLEFLAG(&huart1);
-      HAL_UARTEx_ReceiveToIdle_IT(&huart1, g_uart_rec_buff, BOOTLOADER_UART_REC_BUFF_LEN);
-
+        // memset(g_uart_rec_buff, 0, BOOTLOADER_UART_REC_BUFF_LEN);
+        __HAL_UART_CLEAR_OREFLAG(&huart1);
+        __HAL_UART_CLEAR_IDLEFLAG(&huart1);
+        HAL_UARTEx_ReceiveToIdle_IT(&huart1, g_uart_rec_buff, BOOTLOADER_UART_REC_BUFF_LEN);
     }
 }
-    // 清空缓冲区，准备下次接收
+// 清空缓冲区，准备下次接收
 //     memset(g_uart_rec_buff, 0, BOOTLOADER_UART_REC_BUFF_LEN);
 //     __HAL_UART_CLEAR_OREFLAG(&huart1);
 //     __HAL_UART_CLEAR_IDLEFLAG(&huart1);

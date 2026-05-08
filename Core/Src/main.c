@@ -117,15 +117,24 @@ int main(void)
       Int_flash_erase();
       Int_flash_write_halfword();
       HAL_FLASH_Lock();
-
-      
+      // 清空缓存
+      memset(g_uart_rec_buff, 0, BOOTLOADER_UART_REC_BUFF_LEN);
+  
       // 清除标志
       uart_rx_finish = 0;
     }
+    // 混合方案：数据变化时打印 + 短延迟
+    static uint16_t last_len = 0;
+    if (g_uart_rec_full_len != last_len)
+    {
+      printf("Received: %d bytes\r", g_uart_rec_full_len);
+      last_len = g_uart_rec_full_len;
+    }
 
-    // 打印接收长度
-    printf("g_uart_rec_full_len:%d\n", g_uart_rec_full_len);
     HAL_Delay(5000);
+    // // 打印接收长度
+    // printf("g_uart_rec_full_len:%d\n", g_uart_rec_full_len);
+    // HAL_Delay(10);
   }
 
   // printf("g_uart_rec_full_len:%d\n", g_uart_rec_full_len);
