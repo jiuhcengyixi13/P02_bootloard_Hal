@@ -134,6 +134,7 @@ void Int_flash_write_halfword(void)
  * @brief Bootloader初始化函数
  * @details 初始化串口中断接收，清除标志位，避免启动前接收数据导致溢出
  */
+
 void Int_bootloader_init(void)
 {
     // 清除串口溢出标志和空闲帧标志
@@ -159,20 +160,6 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 
         uart_rx_finish = 1; // 只打标志！
 
-        // // 解锁Flash以便写入
-        // HAL_FLASH_Unlock();
-
-        // // 擦除Flash页
-        // Int_flash_erase();
-
-        // // 根据数据长度奇偶性选择写入16字节方式
-        // Int_flash_write_halfword();
-
-        // // 上锁Flash
-        // HAL_FLASH_Lock();
-        // memset(g_uart_rec_buff, 0, BOOTLOADER_UART_REC_BUFF_LEN);
-        __HAL_UART_CLEAR_OREFLAG(&huart1);
-        __HAL_UART_CLEAR_IDLEFLAG(&huart1);
         HAL_UARTEx_ReceiveToIdle_IT(&huart1, g_uart_rec_buff, BOOTLOADER_UART_REC_BUFF_LEN);
     }
 }

@@ -127,7 +127,7 @@ int main(void)
     static uint16_t last_len = 0;
     if (g_uart_rec_full_len != last_len)
     {
-      printf("Received: %d bytes\r", g_uart_rec_full_len);
+      printf("Received: %d bytes\n", g_uart_rec_full_len);
       last_len = g_uart_rec_full_len;
     }
 
